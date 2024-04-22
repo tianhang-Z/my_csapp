@@ -138,7 +138,8 @@ NOTES:
  *   Max ops: 8
  *   Rating: 1
  */
-//德摩根公式
+//德摩根公式 ~x&y=(~x)|(~y)  ~(x|y)=(~x)&(~y)
+//~的优先级很高 要加括号
 int bitAnd(int x, int y) {
   return ~((~x)|(~y));
 }
@@ -150,7 +151,6 @@ int bitAnd(int x, int y) {
  *   Max ops: 6
  *   Rating: 2
  */
-//&0 1 实现位选
 int getByte(int x, int n) {
   return (x>>(n<<3))&0xff;
 }
@@ -162,8 +162,20 @@ int getByte(int x, int n) {
  *   Max ops: 20
  *   Rating: 3 
  */
+//对于有符号数 默认移位是算数移位 由于整型int的负数最高位是1 右移时会对最高位补1
+//对于无符号数 移位则是逻辑移位
+//补码的好处：以-4为例 其二进制数为11111111 11111111 11111111 11111100  还差4变成0x0000 0000
+//其算数右位1位后  还差2变成 0x0000 0000 即从-4变成了-2
+//采用补码可以使负数的二进制加减法更方便
 int logicalShift(int x, int n) {
-  return (x>>n);
+  //实验要求使用0-255以内的常数
+  // unsigned int mask=0xffffffff;  
+  // mask>>=n;
+
+  //目的是构造一个以0开头的mask  
+  // 逻辑反 ~2=-3  ~1=-2  ~0=0xffff ffff=-1
+  int mask=((0x1<<(32+~n))+~0)  |(0x1<<(32+~n));
+  return (x>>n)&mask;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -172,8 +184,27 @@ int logicalShift(int x, int n) {
  *   Max ops: 40
  *   Rating: 4
  */
+//很巧妙  归并 相邻奇偶位->相邻四位->相邻8位->相邻字节->...
 int bitCount(int x) {
-  return 2;
+  // int mask1=0x55555555;
+  // int mask2=0x33333333;
+  // int mask3=0x0f0f0f0f;
+  // int mask4=0x00ff00ff;
+  // int mask5=0x0000ffff;
+  int _mask1=(0x55<<8)|0x55;
+  int mask1=_mask1|(_mask1<<16);
+  int _mask2=(0x33<<8)|0x33;
+  int mask2=_mask2|(_mask2<<16);
+  int _mask3=(0x0f<<8)|0x0f;
+  int mask3=_mask3|(_mask3<<16);
+  int mask4=0xff|(0xff<<16);
+  int mask5=0xff|(0xff<<8);
+  int ans=(x&mask1)+((x>>1)&mask1);
+  ans=(ans&mask2)+((ans>>2)&mask2);
+  ans=(ans&mask3)+((ans>>4)&mask3);
+  ans=(ans&mask4)+((ans>>8)&mask4);
+  ans=(ans&mask5)+((ans>>16)&mask5);
+  return ans;
 }
 /* 
  * bang - Compute !x without using !
@@ -181,7 +212,11 @@ int bitCount(int x) {
  *   Legal ops: ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 4 
- */
+ */ 
+//逐层或
+//前16位和后16位进行位或
+//后16位的前8位和后8位进行或
+//...如此循环 最后进行最后两位的或 看能否得到1
 int bang(int x) {
   return 2;
 }
