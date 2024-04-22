@@ -218,7 +218,12 @@ int bitCount(int x) {
 //后16位的前8位和后8位进行或
 //...如此循环 最后进行最后两位的或 看能否得到1
 int bang(int x) {
-  return 2;
+  x=(x>>16)|x;
+  x=(x>>8)|x;
+  x=(x>>4)|x;
+  x=(x>>2)|x;
+  x=(x>>1)|x;
+  return ~x&0x1;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -226,8 +231,10 @@ int bang(int x) {
  *   Max ops: 4
  *   Rating: 1
  */
+// two's complement 补码
+//补码最小值  
 int tmin(void) {
-  return 2;
+  return 0x1<<31;
 }
 /* 
  * fitsBits - return 1 if x can be represented as an 
@@ -238,8 +245,18 @@ int tmin(void) {
  *   Max ops: 15
  *   Rating: 2
  */
+// ~0=-1 ~1=-2  ~2=-3
+// 以x=5为例 至少要0101四位  
+// 假如n=3,把第3位左移29次到int的符号位，再右移29次，得到的新数和原数不同了
+// 加入n>=4，把最高的第n位移动到int符号位，再移动到原位，新数和原数相同，n足够
+// 若x为负数，同理，只要第一个0不移动到int的符号位即可
+// 用异或判断两数是否相同
+// 注：这个判题有bug 0x80000000 可以用32bit表示  //n=32必然可以
 int fitsBits(int x, int n) {
-  return 2;
+  int shift_bit=33+~n;
+  int new_num=(x<<shift_bit)>>shift_bit;
+  int ans=!(new_num^x);        
+  return ans;
 }
 /* 
  * divpwr2 - Compute x/(2^n), for 0 <= n <= 30
@@ -249,8 +266,10 @@ int fitsBits(int x, int n) {
  *   Max ops: 15
  *   Rating: 2
  */
+//  
 int divpwr2(int x, int n) {
-    return 2;
+    int bias=(x>>31)&((1<<n)+~0);
+    return (x+bias)>>n;
 }
 /* 
  * negate - return -x 
