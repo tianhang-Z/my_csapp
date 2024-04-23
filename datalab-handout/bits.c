@@ -213,6 +213,7 @@ int bitCount(int x) {
  *   Max ops: 12
  *   Rating: 4 
  */ 
+//x为0  !x返回1
 //逐层或
 //前16位和后16位进行位或
 //后16位的前8位和后8位进行或
@@ -278,8 +279,9 @@ int divpwr2(int x, int n) {
  *   Max ops: 5
  *   Rating: 2
  */
+//利用~实现减法
 int negate(int x) {
-  return 2;
+  return ~x+1;
 }
 /* 
  * isPositive - return 1 if x > 0, return 0 otherwise 
@@ -288,8 +290,10 @@ int negate(int x) {
  *   Max ops: 8
  *   Rating: 3
  */
+//需满足不为0 : x当x不为0时返回1  取两次非 使结果为只有一位
+//还需满足符号位不为1
 int isPositive(int x) {
-  return 2;
+  return (!!x)&!((x>>31)&0x1);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -298,8 +302,20 @@ int isPositive(int x) {
  *   Max ops: 24
  *   Rating: 3
  */
+//需x-y<=0 
+//而-y=~y+1
+//若x-y<=0 则x+~y+1<=0  x+~y<0 
+//特殊的 x=0x80000000 y=0x7fffffff  x+~y=0;  负溢出了
+// x=0x7ffffffff y=0x80000000   x+~y=-1  正溢出了
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int val_op=((x+~y)>>31)&0x1;       
+  int x_op=(x>>31)&1;
+  int y_op=(y>>31)&1;
+  //x_op=0 y_op=1 return 0    
+  //  !(!x_op&y_op) = (x_op|!y_op) 
+  //x_op=1 y_op=0 return 1
+  //val_op=1 return 1
+  return !(!x_op&y_op)&(val_op|(x_op&!y_op));
 }
 /*
  * ilog2 - return floor(log base 2 of x), where x > 0
@@ -308,8 +324,17 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 90
  *   Rating: 4
  */
+//找到1的最高位
+//答案思路：二分
 int ilog2(int x) {
-  return 2;
+  int ans=1; 
+  //!!x当x不为0返回1
+  ans=(!!(x>>16))<<4;   //看是在前16位还是后16位  对应ans记为16或0
+  ans=ans+((!!(x>>(ans+8)))<<3);   //在上次的基础上 看是在前8位还是后8位 ans加上8或0
+  ans=ans+((!!(x>>(ans+4)))<<2);
+  ans=ans+((!!(x>>(ans+2)))<<1);
+  ans=ans+((!!(x>>(ans+1)))<<0);
+  return ans;
 }
 /* 
  * float_neg - Return bit-level equivalent of expression -f for
@@ -322,8 +347,12 @@ int ilog2(int x) {
  *   Max ops: 10
  *   Rating: 2
  */
+//需识别出NaN 
 unsigned float_neg(unsigned uf) {
- return 2;
+  if (((uf<<1)^0xffffffff)<0x00ffffff) {
+    return uf;
+  }
+  else return uf^0x80000000;       //最高位与1异或 取反
 }
 /* 
  * float_i2f - Return bit-level equivalent of expression (float) x
