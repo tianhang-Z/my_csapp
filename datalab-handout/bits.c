@@ -363,8 +363,61 @@ unsigned float_neg(unsigned uf) {
  *   Max ops: 30
  *   Rating: 4
  */
+//float s exp(8bits) frac(23bits，0-22)
+//E=e-bias  bias=127
+//frac不带开头隐含的1.
 unsigned float_i2f(int x) {
-  return 2;
+  int e=0;
+  int n=0xffffffff;
+  int tmp=0;
+  int tmp2=0;
+  int cp=0;
+  int cp2=0;   //x的符号位
+  int sign=x&0x80000000;
+  if(x==0x80000000) {
+    return 0xcf000000;     //-2^31;  (31+127)=158=0b1001 1110  这是exp   
+  }
+  if(x==0){
+    return 0;
+  }
+  if(sign){
+    x=-x;  //若x为负,将其变为正值
+  } 
+
+  x=x&0x7fffffff;  //去掉x的符号位
+  tmp=x;
+  //获取x的1的最高位  （0-31）
+  while(tmp>0){
+    tmp=tmp>>1;
+    n++;
+  }
+  x=x-(0x1<<n); //去掉x的最高位1
+  //如果最高位小于等于23位 则令frac等于去除1最高位后的x 又frac左侧默认带个1,0
+  //frac左移23-n次后，x 阶码E为n，隐含的1和原来x的最高位对齐 
+  if(n<24){
+    x=x<<(23-n);
+  }//如果n大于23，则需x最高位和隐含的1对齐
+  else{
+    tmp2=x>>(n-23);
+    cp2=1<<(n-24);      //eg:n=26,cp2=0b100,(cp2<<1)-1=0b111
+    cp=x&((cp2<<1)-1);  //获取x右移后变成tmp2后消失的那部分,即舍去的部分
+    if(cp<cp2){    //舍去部分的最高位不为1，则直接舍去
+      x=tmp2;
+    }else{  //舍去部分的最高位为1，则向上舍入，tmp2进1
+      if(tmp2==0x7fffff){
+        x=0;
+        n++;
+      }
+      else{      
+        if(cp==cp2){    //中间值向偶数舍入
+          x=(tmp2&0x1)+tmp2;
+        }
+        else x=tmp2+1;
+      }
+    }
+  }
+  e=(n+127)<<23;  //n为E E=e-bias
+  return sign|e|x;
 }
 /* 
  * float_twice - Return bit-level equivalent of expression 2*f for
@@ -378,5 +431,23 @@ unsigned float_i2f(int x) {
  *   Rating: 4
  */
 unsigned float_twice(unsigned uf) {
-  return 2;
+  int tmp=uf;
+  int sign=uf&0x80000000;
+  int exp=uf&0x7f800000;
+  int f=uf&0x7fffff;
+  tmp=tmp&0x7fffffff;  //移除sign
+  if(exp==0x0){  //处理非规格化数{
+    tmp=(tmp<<1)|sign;
+    return tmp;
+  } 
+  else if((exp>>23)==0xff){     //处理无穷和NaN
+    return uf;
+  }
+  else{
+    if((exp>>23)+1==0xff)  return sign|0x7f800000;
+    else{
+      return sign|(((exp>>23)+1)<<23)|f;
+    }
+  }
+  return tmp;
 }
