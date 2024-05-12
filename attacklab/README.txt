@@ -26,3 +26,6 @@ can compile (use flag -Og) and disassemble it to look for gadgets.
 Utility program to generate byte sequences.  See documentation in lab
 handout.
 
+实验需要5个口令，phase1-5
+.s .d .o .txt分别是phase所需的汇编，反汇编，目标文件，txt文件
+raw文件时最终口令 用hex2raw生成

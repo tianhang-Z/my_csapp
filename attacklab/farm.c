@@ -6,42 +6,42 @@ int start_farm()
 
 unsigned getval_142()
 {
-    return 2425387259U;
+    return 2425387259U;  //0x9090 78FB
 }
 
 unsigned addval_273(unsigned x)
 {
-    return x + 3284633928U;
-}
+    return x + 3284633928U;  //0xC3C78948
+} 
 
 unsigned addval_219(unsigned x)
 {
-    return x + 2421715793U;
+    return x + 2421715793U;  //0x9058 7351
 }
 
 void setval_237(unsigned *p)
 {
-    *p = 3351742792U;
+    *p = 3351742792U;  //0xC7C78948
 }
 
 void setval_424(unsigned *p)
 {
-    *p = 2455290452U;
+    *p = 2455290452U;  //0x9258C254
 }
 
 void setval_470(unsigned *p)
 {
-    *p = 3347925091U;
+    *p = 3347925091U;  //0xC78D4863
 }
 
 void setval_426(unsigned *p)
 {
-    *p = 2428995912U;
+    *p = 2428995912U;  //0x90C78948
 }
 
-unsigned getval_280()
+unsigned getval_280()   
 {
-    return 3281016873U;
+    return 3281016873U;  //0xC3905829
 }
 
 /* This function marks the middle of the farm */
