@@ -589,7 +589,7 @@ Disassembly of section .text:
   4011ee:	48 8b 5b 08          	mov    0x8(%rbx),%rbx
   4011f2:	83 ed 01             	sub    $0x1,%ebp
   4011f5:	75 e8                	jne    4011df <phase_6+0xeb>
-  4011f7:	48 83 c4 50          	add    $0x50,%rsp
+  4011f7 :	48 83 c4 50          	add    $0x50,%rsp
   4011fb:	5b                   	pop    %rbx
   4011fc:	5d                   	pop    %rbp
   4011fd:	41 5c                	pop    %r12
